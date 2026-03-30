@@ -15,4 +15,12 @@ class Post extends Model
     {
         return $this->hasMany(Comment::class)->whereNull('parent_id');
     }
+
+    protected $fillable = [
+        'user_id',
+        'title',
+        'content',
+        'image_url',
+        'video_url',
+    ];
 }

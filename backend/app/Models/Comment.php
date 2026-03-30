@@ -25,4 +25,11 @@ class Comment extends Model
     {
         return $this->hasMany(Comment::class, 'parent_id')->with('user', 'replies');
     }
+
+    protected $fillable = [
+        'post_id',
+        'user_id',
+        'parent_id',
+        'content',
+    ];
 }
