@@ -12,6 +12,7 @@ class PostController extends Controller
     public function index()
     {
         return Post::with(['user'])
+            ->withCount('comments')
             ->latest()
             ->paginate(5);
     }

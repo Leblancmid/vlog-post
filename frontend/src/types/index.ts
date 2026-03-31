@@ -21,6 +21,11 @@ export interface Post {
     image_url?: string | null
     video_url?: string | null
     created_at?: string
-    user?: User
+    user?: {
+        id: number
+        name: string
+        avatar_url?: string | null
+    }
     comments?: Comment[]
+    comments_count?: number
 }

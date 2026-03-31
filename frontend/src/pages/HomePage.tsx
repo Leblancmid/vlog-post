@@ -135,7 +135,7 @@ export function HomePage() {
 
                             <div className="mt-4 flex items-center justify-between text-sm">
                                 <span className="font-medium text-slate-600">
-                                    {post.comments?.length ?? 0} comments
+                                    {post.comments_count ?? 0} comments
                                 </span>
                                 <span className="text-slate-400">Open post →</span>
                             </div>
