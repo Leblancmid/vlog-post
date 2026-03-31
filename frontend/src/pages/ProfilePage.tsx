@@ -14,6 +14,7 @@ export function ProfilePage() {
     const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url ?? '')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+    const [success, setSuccess] = useState('')
 
     const openModal = () => {
         setName(user?.name ?? '')
@@ -57,7 +58,13 @@ export function ProfilePage() {
             })
 
             setUser(updated)
+
+            setSuccess('Profile updated successfully')
             setIsOpen(false)
+
+            setTimeout(() => {
+                setSuccess('')
+            }, 3000)
         } catch (err: any) {
             setError(err?.response?.data?.message || 'Failed to update profile.')
         } finally {
@@ -67,6 +74,11 @@ export function ProfilePage() {
 
     return (
         <div className="mx-auto max-w-4xl">
+            {success && (
+                <div className="fixed top-5 right-5 z-50 rounded-xl bg-green-600 px-5 py-3 text-sm font-medium text-white shadow-lg">
+                    {success}
+                </div>
+            )}
             <div className="mb-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h1 className="text-2xl font-bold text-slate-900">Profile</h1>
                 <p className="mt-2 text-sm leading-6 text-slate-500">
