@@ -44,8 +44,31 @@ export function PostDetailPage() {
         <div className="max-w-3xl space-y-6">
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h1 className="mb-2 text-2xl font-bold text-slate-900">{post.title}</h1>
-                <p className="mb-4 text-sm text-slate-500">By {post.user?.name ?? 'Unknown'}</p>
-                <p className="whitespace-pre-line text-slate-700">{post.content}</p>
+
+                <p className="mb-4 text-sm text-slate-500">
+                    By {post.user?.name ?? 'Unknown'}
+                </p>
+
+                <p className="whitespace-pre-line text-slate-700">
+                    {post.content}
+                </p>
+
+                {/* 👇 ADD THIS PART */}
+                {post.image_url && (
+                    <img
+                        src={post.image_url}
+                        alt="Post"
+                        className="mt-4 w-full rounded-lg"
+                    />
+                )}
+
+                {post.video_url && (
+                    <iframe
+                        src={post.video_url}
+                        className="mt-4 h-64 w-full rounded-lg"
+                        allowFullScreen
+                    />
+                )}
             </div>
 
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
