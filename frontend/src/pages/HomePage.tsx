@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getPosts } from '../api/posts'
 import type { Post } from '../types'
+import { UserAvatar } from '../components/ui/UserAvatar'
 
 function getEmbedVideoUrl(url?: string | null) {
     if (!url) return null
@@ -78,12 +79,20 @@ export function HomePage() {
                             to={`/posts/${post.id}`}
                             className="block rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                         >
-                            <div className="mb-3">
-                                <h2 className="text-lg font-semibold text-slate-900">{post.title}</h2>
-                                <p className="mt-1 text-sm text-slate-500">
-                                    By {post.user?.name ?? 'Unknown'}
-                                    {post.created_at ? ` • ${formatDate(post.created_at)}` : ''}
-                                </p>
+                            <div className="mb-3 flex items-start gap-3">
+                                <UserAvatar
+                                    name={post.user?.name}
+                                    avatarUrl={post.user?.avatar_url}
+                                    size="sm"
+                                />
+
+                                <div>
+                                    <h2 className="text-lg font-semibold text-slate-900">{post.title}</h2>
+                                    <p className="mt-1 text-sm text-slate-500">
+                                        By {post.user?.name ?? 'Unknown'}
+                                        {post.created_at ? ` • ${formatDate(post.created_at)}` : ''}
+                                    </p>
+                                </div>
                             </div>
 
                             <p className="line-clamp-3 text-slate-700">{post.content}</p>

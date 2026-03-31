@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { addComment, replyToComment } from '../api/comments'
 import { getPost } from '../api/posts'
 import type { Post } from '../types'
+import { UserAvatar } from '../components/ui/UserAvatar'
 
 function getEmbedVideoUrl(url?: string | null) {
     if (!url) return null
@@ -21,7 +22,7 @@ function getEmbedVideoUrl(url?: string | null) {
         return `https://www.youtube.com/embed/${shortMatch[1]}`
     }
 
-    return url
+    return null
 }
 
 function formatDate(date?: string) {
@@ -42,13 +43,21 @@ export function PostDetailPage() {
     const [imageError, setImageError] = useState(false)
 
     const loadPost = async () => {
-        if (!id) return
+        if (!id) {
+            setPost(null)
+            setIsLoadingPost(false)
+            return
+        }
 
         setIsLoadingPost(true)
+        setImageError(false)
 
         try {
             const data = await getPost(id)
             setPost(data)
+        } catch (error) {
+            console.error('Failed to load post:', error)
+            setPost(null)
         } finally {
             setIsLoadingPost(false)
         }
@@ -60,14 +69,17 @@ export function PostDetailPage() {
 
     const handleCommentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+
         if (!id || !comment.trim()) return
 
         setIsSubmittingComment(true)
 
         try {
-            await addComment(id, { content: comment })
+            await addComment(id, { content: comment.trim() })
             setComment('')
             await loadPost()
+        } catch (error) {
+            console.error('Failed to add comment:', error)
         } finally {
             setIsSubmittingComment(false)
         }
@@ -75,6 +87,7 @@ export function PostDetailPage() {
 
     const handleReplySubmit = async (commentId: number) => {
         const content = replyContent[commentId]?.trim()
+
         if (!content) return
 
         setSubmittingReplyId(commentId)
@@ -84,13 +97,15 @@ export function PostDetailPage() {
             setReplyContent((prev) => ({ ...prev, [commentId]: '' }))
             setReplyingTo(null)
             await loadPost()
+        } catch (error) {
+            console.error('Failed to reply to comment:', error)
         } finally {
             setSubmittingReplyId(null)
         }
     }
 
     if (isLoadingPost) {
-        return <div>Loading post...</div>
+        return <div className="text-slate-500">Loading post...</div>
     }
 
     if (!post) {
@@ -102,12 +117,24 @@ export function PostDetailPage() {
     return (
         <div className="max-w-3xl space-y-6">
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h1 className="mb-2 text-2xl font-bold text-slate-900">{post.title}</h1>
+                <h1 className="mb-4 text-2xl font-bold text-slate-900">{post.title}</h1>
 
-                <p className="mb-4 text-sm text-slate-500">
-                    By {post.user?.name ?? 'Unknown'}
-                    {post.created_at ? ` • ${formatDate(post.created_at)}` : ''}
-                </p>
+                <div className="mb-4 flex items-center gap-3">
+                    <UserAvatar
+                        name={post.user?.name}
+                        avatarUrl={post.user?.avatar_url}
+                        size="md"
+                    />
+
+                    <div>
+                        <p className="text-sm font-medium text-slate-900">
+                            {post.user?.name ?? 'Unknown'}
+                        </p>
+                        <p className="text-sm text-slate-500">
+                            {post.created_at ? formatDate(post.created_at) : ''}
+                        </p>
+                    </div>
+                </div>
 
                 <p className="whitespace-pre-line text-slate-700">{post.content}</p>
 
@@ -153,11 +180,13 @@ export function PostDetailPage() {
                         placeholder="Write a comment..."
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
+                        disabled={isSubmittingComment}
                     />
 
                     <button
-                        disabled={isSubmittingComment}
-                        className="rounded-lg bg-slate-900 px-4 py-2 text-white hover:bg-slate-800 disabled:opacity-50"
+                        type="submit"
+                        disabled={isSubmittingComment || !comment.trim()}
+                        className="rounded-lg bg-slate-900 px-4 py-2 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {isSubmittingComment ? 'Posting...' : 'Add Comment'}
                     </button>
@@ -166,16 +195,31 @@ export function PostDetailPage() {
                 <div className="space-y-4">
                     {post.comments?.map((item) => (
                         <div key={item.id} className="rounded-xl border border-slate-200 p-4">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <div className="font-medium text-slate-900">{item.user?.name ?? 'Unknown'}</div>
-                                {item.created_at ? (
-                                    <div className="text-xs text-slate-500">{formatDate(item.created_at)}</div>
-                                ) : null}
+                            <div className="flex items-start gap-3">
+                                <UserAvatar
+                                    name={item.user?.name}
+                                    avatarUrl={item.user?.avatar_url}
+                                    size="sm"
+                                />
+
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <div className="font-medium text-slate-900">
+                                            {item.user?.name ?? 'Unknown'}
+                                        </div>
+                                        {item.created_at ? (
+                                            <div className="text-xs text-slate-500">
+                                                {formatDate(item.created_at)}
+                                            </div>
+                                        ) : null}
+                                    </div>
+
+                                    <p className="mt-2 text-slate-700">{item.content}</p>
+                                </div>
                             </div>
 
-                            <p className="mt-2 text-slate-700">{item.content}</p>
-
                             <button
+                                type="button"
                                 onClick={() => setReplyingTo(replyingTo === item.id ? null : item.id)}
                                 className="mt-2 text-sm font-medium text-slate-600 hover:text-slate-900"
                             >
@@ -194,36 +238,53 @@ export function PostDetailPage() {
                                                 [item.id]: e.target.value,
                                             }))
                                         }
+                                        disabled={submittingReplyId === item.id}
                                     />
 
                                     <button
+                                        type="button"
                                         onClick={() => void handleReplySubmit(item.id)}
-                                        disabled={submittingReplyId === item.id}
-                                        className="rounded-lg bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-800 disabled:opacity-50"
+                                        disabled={
+                                            submittingReplyId === item.id ||
+                                            !(replyContent[item.id] ?? '').trim()
+                                        }
+                                        className="rounded-lg bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         {submittingReplyId === item.id ? 'Replying...' : 'Submit Reply'}
                                     </button>
                                 </div>
                             )}
 
-                            <div className="mt-4 space-y-3 border-l-2 border-slate-200 pl-3 sm:pl-4">
-                                {item.replies?.map((reply) => (
-                                    <div key={reply.id} className="rounded-lg bg-slate-50 p-3">
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <div className="font-medium text-slate-900">
-                                                {reply.user?.name ?? 'Unknown'}
-                                            </div>
-                                            {reply.created_at ? (
-                                                <div className="text-xs text-slate-500">
-                                                    {formatDate(reply.created_at)}
-                                                </div>
-                                            ) : null}
-                                        </div>
+                            {item.replies && item.replies.length > 0 && (
+                                <div className="mt-4 space-y-3 border-l-2 border-slate-200 pl-3 sm:pl-4">
+                                    {item.replies.map((reply) => (
+                                        <div key={reply.id} className="rounded-lg bg-slate-50 p-3">
+                                            <div className="flex items-center gap-3">
+                                                <UserAvatar
+                                                    name={reply.user?.name}
+                                                    avatarUrl={reply.user?.avatar_url}
+                                                    size="sm"
+                                                />
 
-                                        <p className="mt-1 text-slate-700">{reply.content}</p>
-                                    </div>
-                                ))}
-                            </div>
+                                                <div>
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <div className="font-medium text-slate-900">
+                                                            {reply.user?.name ?? 'Unknown'}
+                                                        </div>
+                                                        {reply.created_at ? (
+                                                            <div className="text-xs text-slate-500">
+                                                                {formatDate(reply.created_at)}
+                                                            </div>
+                                                        ) : null}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <p className="mt-2 text-slate-700">{reply.content}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     ))}
 
