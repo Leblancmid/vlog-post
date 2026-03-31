@@ -22,7 +22,18 @@ function getEmbedVideoUrl(url?: string | null) {
         return `https://www.youtube.com/embed/${shortMatch[1]}`
     }
 
-    return null
+    return url
+}
+
+function getImageUrl(path?: string | null) {
+    if (!path) return null
+
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+        return path
+    }
+
+    const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') ?? ''
+    return `${baseUrl}${path}`
 }
 
 function formatDate(date?: string) {
@@ -113,6 +124,7 @@ export function PostDetailPage() {
     }
 
     const embedVideoUrl = getEmbedVideoUrl(post.video_url)
+    const imageUrl = getImageUrl(post.image_url)
 
     return (
         <div className="max-w-3xl space-y-6">
@@ -138,16 +150,16 @@ export function PostDetailPage() {
 
                 <p className="whitespace-pre-line text-slate-700">{post.content}</p>
 
-                {post.image_url && !imageError && (
+                {imageUrl && !imageError && (
                     <img
-                        src={post.image_url}
+                        src={imageUrl}
                         alt="Post"
                         onError={() => setImageError(true)}
                         className="mt-4 max-h-[500px] w-full rounded-lg object-cover"
                     />
                 )}
 
-                {embedVideoUrl && (
+                {!imageUrl && embedVideoUrl && (
                     <div className="mt-4">
                         <div className="relative w-full overflow-hidden rounded-lg pt-[56.25%]">
                             <iframe

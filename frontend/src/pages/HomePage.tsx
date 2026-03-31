@@ -24,6 +24,17 @@ function getEmbedVideoUrl(url?: string | null) {
     return url
 }
 
+function getImageUrl(path?: string | null) {
+    if (!path) return null
+
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+        return path
+    }
+
+    const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') ?? ''
+    return `${baseUrl}${path}`
+}
+
 function formatDate(date?: string) {
     if (!date) return ''
     return new Date(date).toLocaleString()
@@ -43,6 +54,8 @@ export function HomePage() {
                 const response = await getPosts(page)
                 setPosts(response.data)
                 setLastPage(response.last_page)
+            } catch (error) {
+                console.error('Failed to load posts:', error)
             } finally {
                 setLoading(false)
             }
@@ -72,6 +85,7 @@ export function HomePage() {
             <div className="space-y-5">
                 {posts.map((post) => {
                     const embedVideoUrl = getEmbedVideoUrl(post.video_url)
+                    const imageUrl = getImageUrl(post.image_url)
 
                     return (
                         <Link
@@ -87,7 +101,9 @@ export function HomePage() {
                                 />
 
                                 <div>
-                                    <h2 className="text-lg font-semibold text-slate-900">{post.title}</h2>
+                                    <h2 className="text-lg font-semibold text-slate-900">
+                                        {post.title}
+                                    </h2>
                                     <p className="mt-1 text-sm text-slate-500">
                                         By {post.user?.name ?? 'Unknown'}
                                         {post.created_at ? ` • ${formatDate(post.created_at)}` : ''}
@@ -97,15 +113,15 @@ export function HomePage() {
 
                             <p className="line-clamp-3 text-slate-700">{post.content}</p>
 
-                            {post.image_url ? (
+                            {imageUrl ? (
                                 <img
-                                    src={post.image_url}
+                                    src={imageUrl}
                                     alt="Post preview"
                                     className="mt-4 h-48 w-full rounded-2xl object-cover sm:h-56"
                                 />
                             ) : null}
 
-                            {!post.image_url && embedVideoUrl ? (
+                            {!imageUrl && embedVideoUrl ? (
                                 <div className="relative mt-4 w-full overflow-hidden rounded-2xl bg-slate-100 pt-[56.25%]">
                                     <iframe
                                         src={embedVideoUrl}

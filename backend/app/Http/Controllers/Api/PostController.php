@@ -29,7 +29,7 @@ class PostController extends Controller
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('posts', 'public');
-            $imageUrl = Storage::url($path);
+            $imageUrl = url(Storage::url($path));
         }
 
         $post = Post::create([
