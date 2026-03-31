@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { addComment, replyToComment } from '../api/comments'
 import { getPost } from '../api/posts'
 import type { Post } from '../types'
@@ -43,6 +43,7 @@ function formatDate(date?: string) {
 
 export function PostDetailPage() {
     const { id } = useParams()
+    const navigate = useNavigate();
 
     const [post, setPost] = useState<Post | null>(null)
     const [comment, setComment] = useState('')
@@ -129,6 +130,12 @@ export function PostDetailPage() {
     return (
         <div className="max-w-3xl space-y-6">
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="mb-4 inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100"
+                >
+                    ← Back
+                </button>
                 <h1 className="mb-4 text-2xl font-bold text-slate-900">{post.title}</h1>
 
                 <div className="mb-4 flex items-center gap-3">
