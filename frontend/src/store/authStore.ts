@@ -5,10 +5,13 @@ export interface AuthUser {
     id: number
     name: string
     email: string
+    bio?: string | null
+    avatar_url?: string | null
 }
 
 type AuthState = {
     user: AuthUser | null
+    setUser: (user: AuthUser) => void
     isAuthenticated: boolean
     isLoading: boolean
     bootstrap: () => Promise<void>
@@ -20,6 +23,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     user: null,
     isAuthenticated: false,
     isLoading: false,
+
+    setUser: (user) =>
+        set({
+            user,
+            isAuthenticated: true,
+        }),
 
     bootstrap: async () => {
         set({ isLoading: true })

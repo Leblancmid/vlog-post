@@ -2,6 +2,8 @@ export interface User {
     id: number
     name: string
     email: string
+    bio?: string | null
+    avatar_url?: string | null
 }
 
 export interface Comment {
