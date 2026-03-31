@@ -164,6 +164,7 @@ export function CreatePostPage() {
                             </label>
                             <textarea
                                 className="min-h-40 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500"
+                                name="content"
                                 value={content}
                                 onChange={(e) => setContent(e.target.value)}
                                 placeholder="Write what this vlog post is about..."
