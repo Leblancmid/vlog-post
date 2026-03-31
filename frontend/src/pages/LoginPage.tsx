@@ -3,7 +3,6 @@ import { useAuthStore } from '../store/authStore'
 
 export function LoginPage() {
     const login = useAuthStore((state) => state.login)
-    const isLoading = useAuthStore((state) => state.isLoading)
 
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -14,31 +13,6 @@ export function LoginPage() {
         email: '',
         password: '',
     })
-
-    const validateForm = () => {
-        const errors = {
-            email: '',
-            password: '',
-        }
-
-        const emailTrimmed = email.trim()
-
-        if (!emailTrimmed) {
-            errors.email = 'Email is required.'
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
-            errors.email = 'Please enter a valid email address.'
-        }
-
-        if (!password.trim()) {
-            errors.password = 'Password is required.'
-        } else if (password.length < 6) {
-            errors.password = 'Password must be at least 6 characters.'
-        }
-
-        setFieldErrors(errors)
-
-        return !errors.email && !errors.password
-    }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
