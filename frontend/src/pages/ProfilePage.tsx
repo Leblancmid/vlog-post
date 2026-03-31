@@ -10,14 +10,16 @@ export function ProfilePage() {
     const [isOpen, setIsOpen] = useState(false)
     const [name, setName] = useState(user?.name ?? '')
     const [bio, setBio] = useState(user?.bio ?? '')
-    const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url ?? '')
+    const [avatarFile, setAvatarFile] = useState<File | null>(null)
+    const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url ?? '')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
 
     const openModal = () => {
         setName(user?.name ?? '')
         setBio(user?.bio ?? '')
-        setAvatarUrl(user?.avatar_url ?? '')
+        setAvatarFile(null)
+        setAvatarPreview(user?.avatar_url ?? '')
         setError('')
         setIsOpen(true)
     }
@@ -25,6 +27,16 @@ export function ProfilePage() {
     const closeModal = () => {
         if (loading) return
         setIsOpen(false)
+    }
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] ?? null
+        setAvatarFile(file)
+
+        if (file) {
+            const previewUrl = URL.createObjectURL(file)
+            setAvatarPreview(previewUrl)
+        }
     }
 
     const handleSubmit = async () => {
@@ -35,22 +47,13 @@ export function ProfilePage() {
             return
         }
 
-        try {
-            if (avatarUrl.trim()) {
-                new URL(avatarUrl)
-            }
-        } catch {
-            setError('Avatar URL must be a valid URL.')
-            return
-        }
-
         setLoading(true)
 
         try {
             const updated = await updateUser({
                 name: name.trim(),
                 bio: bio.trim(),
-                avatar_url: avatarUrl.trim(),
+                avatar: avatarFile,
             })
 
             setUser(updated)
@@ -77,7 +80,7 @@ export function ProfilePage() {
                         <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-slate-900 text-2xl font-bold text-white">
                             {user?.avatar_url ? (
                                 <img
-                                    src={user.avatar_url}
+                                    src={`http://127.0.0.1:8000${user.avatar_url}`}
                                     alt="Avatar"
                                     className="h-full w-full object-cover"
                                 />
@@ -174,9 +177,11 @@ export function ProfilePage() {
 
                                     <div className="mt-6 flex items-center gap-4">
                                         <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-slate-900 text-2xl font-bold text-white">
-                                            {avatarUrl.trim() ? (
+                                            {avatarPreview ? (
                                                 <img
-                                                    src={avatarUrl}
+                                                    src={avatarPreview.startsWith('/storage/')
+                                                        ? `http://127.0.0.1:8000${avatarPreview}`
+                                                        : avatarPreview}
                                                     alt="Avatar preview"
                                                     className="h-full w-full object-cover"
                                                 />
@@ -189,9 +194,7 @@ export function ProfilePage() {
                                             <p className="text-base font-semibold text-slate-900">
                                                 {name.trim() || 'Your Name'}
                                             </p>
-                                            <p className="text-sm text-slate-500">
-                                                Live preview
-                                            </p>
+                                            <p className="text-sm text-slate-500">Live preview</p>
                                         </div>
                                     </div>
 
@@ -210,13 +213,13 @@ export function ProfilePage() {
 
                                         <div>
                                             <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                                                Avatar URL
+                                                Upload Avatar
                                             </label>
                                             <input
-                                                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500"
-                                                value={avatarUrl}
-                                                onChange={(e) => setAvatarUrl(e.target.value)}
-                                                placeholder="https://example.com/avatar.jpg"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleFileChange}
+                                                className="block w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-700"
                                             />
                                         </div>
 
