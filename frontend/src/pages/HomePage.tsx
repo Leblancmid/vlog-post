@@ -125,7 +125,7 @@ export function HomePage() {
                 ) : null}
             </div>
 
-            <div className="mt-6 flex items-center justify-between">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <button
                     onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                     disabled={page === 1}
@@ -134,9 +134,24 @@ export function HomePage() {
                     Previous
                 </button>
 
-                <span className="text-sm text-slate-600">
-                    Page {page} of {lastPage}
-                </span>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                    {Array.from({ length: lastPage }, (_, index) => {
+                        const pageNumber = index + 1
+
+                        return (
+                            <button
+                                key={pageNumber}
+                                onClick={() => setPage(pageNumber)}
+                                className={`rounded-xl px-4 py-2 text-sm font-medium transition ${page === pageNumber
+                                    ? 'bg-slate-900 text-white'
+                                    : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                                    }`}
+                            >
+                                {pageNumber}
+                            </button>
+                        )
+                    })}
+                </div>
 
                 <button
                     onClick={() => setPage((prev) => Math.min(prev + 1, lastPage))}
