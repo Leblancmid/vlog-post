@@ -2,6 +2,26 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createPost } from '../api/posts'
 
+function normalizeVideoUrl(url: string) {
+    if (!url.trim()) return undefined
+
+    if (url.includes('youtube.com/embed/')) {
+        return url
+    }
+
+    const watchMatch = url.match(/[?&]v=([^&]+)/)
+    if (url.includes('youtube.com/watch') && watchMatch) {
+        return `https://www.youtube.com/embed/${watchMatch[1]}`
+    }
+
+    const shortMatch = url.match(/youtu\.be\/([^?&]+)/)
+    if (shortMatch) {
+        return `https://www.youtube.com/embed/${shortMatch[1]}`
+    }
+
+    return url
+}
+
 export function CreatePostPage() {
     const navigate = useNavigate()
 
@@ -19,13 +39,15 @@ export function CreatePostPage() {
             const post = await createPost({
                 title,
                 content,
-                image_url: imageUrl || undefined,
-                video_url: videoUrl || undefined,
+                image_url: imageUrl.trim() || undefined,
+                video_url: normalizeVideoUrl(videoUrl),
             })
 
             navigate(`/posts/${post.id}`)
-        } catch {
-            setError('Unable to create post.')
+        } catch (error: any) {
+            console.error(error)
+            console.error(error?.response?.data)
+            setError(error?.response?.data?.message || 'Unable to create post.')
         }
     }
 
@@ -43,6 +65,7 @@ export function CreatePostPage() {
                         className="w-full rounded-lg border border-slate-300 px-3 py-2"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
+                        placeholder="Enter post title"
                     />
                 </div>
 
@@ -52,6 +75,7 @@ export function CreatePostPage() {
                         className="min-h-32 w-full rounded-lg border border-slate-300 px-3 py-2"
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
+                        placeholder="Write your vlog post content"
                     />
                 </div>
 
@@ -61,6 +85,7 @@ export function CreatePostPage() {
                         className="w-full rounded-lg border border-slate-300 px-3 py-2"
                         value={imageUrl}
                         onChange={(e) => setImageUrl(e.target.value)}
+                        placeholder="https://example.com/image.jpg"
                     />
                 </div>
 
@@ -70,7 +95,11 @@ export function CreatePostPage() {
                         className="w-full rounded-lg border border-slate-300 px-3 py-2"
                         value={videoUrl}
                         onChange={(e) => setVideoUrl(e.target.value)}
+                        placeholder="Paste a YouTube watch, share, or embed URL"
                     />
+                    <p className="mt-1 text-xs text-slate-500">
+                        You can paste a YouTube watch link and it will be converted automatically.
+                    </p>
                 </div>
 
                 {error ? <p className="text-sm text-red-600">{error}</p> : null}
