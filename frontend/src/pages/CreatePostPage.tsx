@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createPost } from '../api/posts'
 
@@ -39,7 +39,7 @@ function getEmbedVideoUrl(url?: string) {
         return `https://www.youtube.com/embed/${shortMatch[1]}`
     }
 
-    return url
+    return null
 }
 
 export function CreatePostPage() {
@@ -47,14 +47,60 @@ export function CreatePostPage() {
 
     const [title, setTitle] = useState('')
     const [content, setContent] = useState('')
-    const [imageUrl, setImageUrl] = useState('')
+    const [imageFile, setImageFile] = useState<File | null>(null)
     const [videoUrl, setVideoUrl] = useState('')
     const [error, setError] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     const normalizedVideoUrl = normalizeVideoUrl(videoUrl)
     const previewVideoUrl = getEmbedVideoUrl(normalizedVideoUrl)
-    const hasPreview = Boolean(imageUrl.trim() || previewVideoUrl)
+
+    const imagePreviewUrl = useMemo(() => {
+        if (!imageFile) return ''
+        return URL.createObjectURL(imageFile)
+    }, [imageFile])
+
+    useEffect(() => {
+        return () => {
+            if (imagePreviewUrl) {
+                URL.revokeObjectURL(imagePreviewUrl)
+            }
+        }
+    }, [imagePreviewUrl])
+
+    const hasPreview = Boolean(imagePreviewUrl || previewVideoUrl)
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] ?? null
+
+        if (!file) {
+            setImageFile(null)
+            return
+        }
+
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+
+        if (!allowedTypes.includes(file.type)) {
+            setError('Please upload a JPG, PNG, WEBP, or GIF image.')
+            e.target.value = ''
+            setImageFile(null)
+            return
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            setError('Image must be 5MB or smaller.')
+            e.target.value = ''
+            setImageFile(null)
+            return
+        }
+
+        setError('')
+        setImageFile(file)
+    }
+
+    const removeImage = () => {
+        setImageFile(null)
+    }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -62,13 +108,19 @@ export function CreatePostPage() {
         setIsSubmitting(true)
 
         try {
-            const post = await createPost({
-                title: title.trim(),
-                content: content.trim(),
-                image_url: imageUrl.trim() || undefined,
-                video_url: normalizedVideoUrl,
-            })
+            const formData = new FormData()
+            formData.append('title', title.trim())
+            formData.append('content', content.trim())
 
+            if (normalizedVideoUrl) {
+                formData.append('video_url', normalizedVideoUrl)
+            }
+
+            if (imageFile) {
+                formData.append('image', imageFile)
+            }
+
+            const post = await createPost(formData)
             navigate(`/posts/${post.id}`)
         } catch (error: any) {
             console.error(error)
@@ -124,17 +176,32 @@ export function CreatePostPage() {
                         <div className="grid gap-5 md:grid-cols-2">
                             <div>
                                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                                    Image URL
+                                    Upload Image
                                 </label>
+
                                 <input
-                                    className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500"
-                                    value={imageUrl}
-                                    onChange={(e) => setImageUrl(e.target.value)}
-                                    placeholder="https://example.com/image.jpg"
+                                    type="file"
+                                    accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif"
+                                    onChange={handleImageChange}
+                                    className="block w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition file:mr-3 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-white hover:file:bg-slate-800"
                                 />
+
                                 <p className="mt-1 text-xs text-slate-500">
-                                    Use a direct image link for best results.
+                                    JPG, PNG, WEBP, or other image files.
                                 </p>
+
+                                {imageFile ? (
+                                    <div className="mt-2 flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                                        <span className="truncate">{imageFile.name}</span>
+                                        <button
+                                            type="button"
+                                            onClick={removeImage}
+                                            className="ml-3 text-red-600 hover:underline"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                ) : null}
                             </div>
 
                             <div>
@@ -204,15 +271,15 @@ export function CreatePostPage() {
                             {content.trim() || 'Your post content preview will appear here.'}
                         </p>
 
-                        {imageUrl.trim() ? (
+                        {imagePreviewUrl ? (
                             <img
-                                src={imageUrl.trim()}
+                                src={imagePreviewUrl}
                                 alt="Preview"
                                 className="mt-4 h-56 w-full rounded-xl object-cover"
                             />
                         ) : null}
 
-                        {!imageUrl.trim() && previewVideoUrl ? (
+                        {!imagePreviewUrl && previewVideoUrl ? (
                             <div className="relative mt-4 w-full overflow-hidden rounded-xl bg-slate-200 pt-[56.25%]">
                                 <iframe
                                     src={previewVideoUrl}
@@ -226,7 +293,7 @@ export function CreatePostPage() {
 
                         {!hasPreview ? (
                             <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-white px-4 py-6 text-center text-sm text-slate-500">
-                                Add an image or video link to preview media here.
+                                Upload an image or add a video link to preview media here.
                             </div>
                         ) : null}
                     </div>
@@ -236,7 +303,7 @@ export function CreatePostPage() {
                         <ul className="mt-2 space-y-1">
                             <li>Use a short, clear title</li>
                             <li>Keep content readable and direct</li>
-                            <li>Prefer direct image links</li>
+                            <li>Use clean, high-quality images</li>
                             <li>Use embeddable video links when possible</li>
                         </ul>
                     </div>

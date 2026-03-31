@@ -17,12 +17,7 @@ export async function getPost(id: string) {
     return data
 }
 
-export async function createPost(payload: {
-    title: string
-    content: string
-    image_url?: string
-    video_url?: string
-}) {
+export async function createPost(payload: FormData) {
     const { data } = await api.post('/api/posts', payload)
     return data
 }

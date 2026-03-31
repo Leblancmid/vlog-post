@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -18,14 +19,24 @@ class PostController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'title' => ['required'],
-            'content' => ['required'],
-            'image_url' => ['nullable', 'url'],
+            'title' => ['required', 'string', 'max:255'],
+            'content' => ['required', 'string'],
+            'image' => ['nullable', 'image', 'max:5120'],
             'video_url' => ['nullable', 'url'],
         ]);
 
+        $imageUrl = null;
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('posts', 'public');
+            $imageUrl = Storage::url($path);
+        }
+
         $post = Post::create([
-            ...$data,
+            'title' => $data['title'],
+            'content' => $data['content'],
+            'image_url' => $imageUrl,
+            'video_url' => $data['video_url'] ?? null,
             'user_id' => $request->user()->id,
         ]);
 
@@ -43,20 +54,5 @@ class PostController extends Controller
                 ]);
             },
         ]);
-    }
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }
