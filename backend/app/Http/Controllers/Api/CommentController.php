@@ -3,17 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreCommentRequest;
 use App\Models\Comment;
 use App\Models\Post;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class CommentController extends Controller
 {
-    public function store(Request $request, Post $post)
+    public function store(StoreCommentRequest $request, Post $post): JsonResponse
     {
-        $data = $request->validate([
-            'content' => ['required'],
-        ]);
+        $data = $request->validated();
 
         $comment = Comment::create([
             'post_id' => $post->id,
@@ -21,14 +20,15 @@ class CommentController extends Controller
             'content' => $data['content'],
         ]);
 
-        return $comment->load('user');
+        return response()->json(
+            $comment->load('user'),
+            201
+        );
     }
 
-    public function reply(Request $request, Comment $comment)
+    public function reply(StoreCommentRequest $request, Comment $comment): JsonResponse
     {
-        $data = $request->validate([
-            'content' => ['required'],
-        ]);
+        $data = $request->validated();
 
         $reply = Comment::create([
             'post_id' => $comment->post_id,
@@ -37,6 +37,9 @@ class CommentController extends Controller
             'content' => $data['content'],
         ]);
 
-        return $reply->load('user');
+        return response()->json(
+            $reply->load('user'),
+            201
+        );
     }
 }

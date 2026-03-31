@@ -3,20 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\UpdateUserProfileRequest;
 use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
-    public function update(Request $request)
+    public function update(UpdateUserProfileRequest $request)
     {
         $user = $request->user();
-
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'bio' => ['nullable', 'string'],
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-        ]);
+        $validated = $request->validated();
 
         if ($request->hasFile('avatar')) {
             if ($user->avatar_url) {
@@ -35,6 +30,6 @@ class UserController extends Controller
 
         $user->update($validated);
 
-        return response()->json($user);
+        return response()->json($user->fresh());
     }
 }

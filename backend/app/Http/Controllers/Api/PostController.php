@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StorePostRequest;
 use App\Models\Post;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
@@ -17,14 +17,9 @@ class PostController extends Controller
             ->paginate(5);
     }
 
-    public function store(Request $request)
+    public function store(StorePostRequest $request)
     {
-        $data = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'content' => ['required', 'string'],
-            'image' => ['nullable', 'image', 'max:5120'],
-            'video_url' => ['nullable', 'url'],
-        ]);
+        $data = $request->validated();
 
         $imageUrl = null;
 
