@@ -12,7 +12,7 @@ class PostController extends Controller
     {
         return Post::with(['user'])
             ->latest()
-            ->paginate(10);
+            ->paginate(5);
     }
 
     public function store(Request $request)

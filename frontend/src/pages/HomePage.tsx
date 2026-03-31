@@ -31,19 +31,28 @@ function formatDate(date?: string) {
 export function HomePage() {
     const [posts, setPosts] = useState<Post[]>([])
     const [loading, setLoading] = useState(true)
+    const [page, setPage] = useState(1)
+    const [lastPage, setLastPage] = useState(1)
 
     useEffect(() => {
         const loadPosts = async () => {
+            setLoading(true)
+
             try {
-                const response = await getPosts()
-                setPosts(response.data ?? response)
+                const response = await getPosts(page)
+                setPosts(response.data)
+                setLastPage(response.last_page)
             } finally {
                 setLoading(false)
             }
         }
 
         void loadPosts()
-    }, [])
+    }, [page])
+
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, [page])
 
     if (loading) {
         return <div>Loading posts...</div>
@@ -114,6 +123,28 @@ export function HomePage() {
                         No posts yet. Be the first to create one.
                     </div>
                 ) : null}
+            </div>
+
+            <div className="mt-6 flex items-center justify-between">
+                <button
+                    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={page === 1}
+                    className="rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-700 disabled:opacity-50"
+                >
+                    Previous
+                </button>
+
+                <span className="text-sm text-slate-600">
+                    Page {page} of {lastPage}
+                </span>
+
+                <button
+                    onClick={() => setPage((prev) => Math.min(prev + 1, lastPage))}
+                    disabled={page === lastPage}
+                    className="rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-700 disabled:opacity-50"
+                >
+                    Next
+                </button>
             </div>
         </div>
     )

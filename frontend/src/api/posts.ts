@@ -1,8 +1,15 @@
 import { api } from './axios'
+import type { Post } from '../types'
 
-export async function getPosts() {
-    const { data } = await api.get('/api/posts')
-    return data
+export interface PaginatedPosts {
+    data: Post[]
+    current_page: number
+    last_page: number
+}
+
+export const getPosts = async (page = 1): Promise<PaginatedPosts> => {
+    const res = await api.get(`/api/posts?page=${page}`)
+    return res.data
 }
 
 export async function getPost(id: string) {
