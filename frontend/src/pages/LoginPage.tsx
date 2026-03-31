@@ -5,18 +5,74 @@ export function LoginPage() {
     const login = useAuthStore((state) => state.login)
     const isLoading = useAuthStore((state) => state.isLoading)
 
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
     const [email, setEmail] = useState('demo@vlogapp.com')
     const [password, setPassword] = useState('password')
     const [error, setError] = useState('')
+    const [fieldErrors, setFieldErrors] = useState({
+        email: '',
+        password: '',
+    })
+
+    const validateForm = () => {
+        const errors = {
+            email: '',
+            password: '',
+        }
+
+        const emailTrimmed = email.trim()
+
+        if (!emailTrimmed) {
+            errors.email = 'Email is required.'
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
+            errors.email = 'Please enter a valid email address.'
+        }
+
+        if (!password.trim()) {
+            errors.password = 'Password is required.'
+        } else if (password.length < 6) {
+            errors.password = 'Password must be at least 6 characters.'
+        }
+
+        setFieldErrors(errors)
+
+        return !errors.email && !errors.password
+    }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setError('')
 
+        const trimmedEmail = email.trim()
+
+        if (!trimmedEmail) {
+            setError('Email is required.')
+            return
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+            setError('Please enter a valid email address.')
+            return
+        }
+
+        if (!password.trim()) {
+            setError('Password is required.')
+            return
+        }
+
+        setIsSubmitting(true)
+
         try {
-            await login(email, password)
-        } catch {
-            setError('Invalid credentials or server error.')
+            await login(trimmedEmail, password)
+        } catch (err: any) {
+            if (err?.response?.status === 422) {
+                setError('Email or password is incorrect.')
+            } else {
+                setError('Something went wrong. Please try again.')
+            }
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
@@ -69,18 +125,29 @@ export function LoginPage() {
                             </p>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-5">
+                        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
                             <div>
                                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
                                     Email
                                 </label>
                                 <input
                                     type="email"
-                                    className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500"
+                                    className={`w-full rounded-xl border px-4 py-3 outline-none transition ${fieldErrors.email
+                                        ? 'border-red-400 focus:border-red-500'
+                                        : 'border-slate-300 focus:border-slate-500'
+                                        }`}
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onChange={(e) => {
+                                        setEmail(e.target.value)
+                                        if (fieldErrors.email) {
+                                            setFieldErrors((prev) => ({ ...prev, email: '' }))
+                                        }
+                                    }}
                                     placeholder="Enter your email"
                                 />
+                                {fieldErrors.email ? (
+                                    <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
+                                ) : null}
                             </div>
 
                             <div>
@@ -89,11 +156,22 @@ export function LoginPage() {
                                 </label>
                                 <input
                                     type="password"
-                                    className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500"
+                                    className={`w-full rounded-xl border px-4 py-3 outline-none transition ${fieldErrors.password
+                                        ? 'border-red-400 focus:border-red-500'
+                                        : 'border-slate-300 focus:border-slate-500'
+                                        }`}
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    onChange={(e) => {
+                                        setPassword(e.target.value)
+                                        if (fieldErrors.password) {
+                                            setFieldErrors((prev) => ({ ...prev, password: '' }))
+                                        }
+                                    }}
                                     placeholder="Enter your password"
                                 />
+                                {fieldErrors.password ? (
+                                    <p className="mt-1 text-sm text-red-600">{fieldErrors.password}</p>
+                                ) : null}
                             </div>
 
                             {error ? (
@@ -101,21 +179,14 @@ export function LoginPage() {
                                     {error}
                                 </div>
                             ) : null}
-
                             <button
                                 type="submit"
-                                disabled={isLoading}
+                                disabled={isSubmitting}
                                 className="w-full rounded-xl bg-slate-900 px-4 py-3 font-medium text-white transition hover:bg-slate-800 disabled:opacity-50"
                             >
-                                {isLoading ? 'Signing in...' : 'Login'}
+                                {isSubmitting ? 'Signing in...' : 'Login'}
                             </button>
                         </form>
-
-                        {/* <div className="mt-6 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                            <p className="font-medium text-slate-800">Demo Credentials</p>
-                            <p className="mt-1">Email: demo@vlogapp.com</p>
-                            <p>Password: password</p>
-                        </div> */}
                     </div>
                 </div>
             </div>
