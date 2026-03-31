@@ -36,8 +36,12 @@ class PostController extends Controller
     {
         return $post->load([
             'user',
-            'comments.user',
-            'comments.replies.user',
+            'comments' => function ($query) {
+                $query->with([
+                    'user',
+                    'replies.user',
+                ]);
+            },
         ]);
     }
     /**

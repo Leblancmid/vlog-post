@@ -23,7 +23,8 @@ class Comment extends Model
 
     public function replies()
     {
-        return $this->hasMany(Comment::class, 'parent_id')->with('user', 'replies');
+        return $this->hasMany(Comment::class, 'parent_id')
+            ->with('user', 'replies');
     }
 
     protected $fillable = [
