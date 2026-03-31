@@ -4,6 +4,7 @@ import { CreatePostPage } from '../pages/CreatePostPage'
 import { HomePage } from '../pages/HomePage'
 import { LoginPage } from '../pages/LoginPage'
 import { PostDetailPage } from '../pages/PostDetailPage'
+import { ProfilePage } from '../pages/ProfilePage'
 import { useAuthStore } from '../store/authStore'
 
 function ProtectedLayout() {
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
             { index: true, element: <HomePage /> },
             { path: 'create-post', element: <CreatePostPage /> },
             { path: 'posts/:id', element: <PostDetailPage /> },
+            { path: 'profile', element: <ProfilePage /> },
         ],
     },
 ])

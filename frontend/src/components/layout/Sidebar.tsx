@@ -1,13 +1,21 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 
-export function Sidebar() {
+type SidebarProps = {
+    onNavigate?: () => void
+}
+
+export function Sidebar({ onNavigate }: SidebarProps) {
     const navigate = useNavigate()
     const logout = useAuthStore((state) => state.logout)
 
     const handleLogout = async () => {
         await logout()
         navigate('/login')
+    }
+
+    const handleNavigate = () => {
+        onNavigate?.()
     }
 
     return (
@@ -37,6 +45,18 @@ export function Sidebar() {
                 >
                     Create Post
                 </NavLink>
+
+                <NavLink
+                    to="/profile"
+                    onClick={handleNavigate}
+                    className={({ isActive }) =>
+                        `block rounded-lg px-4 py-2 text-sm font-medium ${isActive ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100'
+                        }`
+                    }
+                >
+                    Profile
+                </NavLink>
+
             </nav>
 
             <div className="px-4 pt-6">
