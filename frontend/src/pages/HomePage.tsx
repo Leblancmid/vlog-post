@@ -51,9 +51,12 @@ export function HomePage() {
 
     return (
         <div>
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-slate-900">Home</h1>
-                <p className="mt-1 text-sm text-slate-500">Latest vlog posts</p>
+            <div className="mb-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h1 className="text-2xl font-bold text-slate-900">Latest vlog posts</h1>
+                <p className="mt-2 text-sm leading-6 text-slate-500">
+                    Browse updates from your vlog feed, open a post to join the discussion,
+                    or create a new one from the sidebar.
+                </p>
             </div>
 
             <div className="space-y-5">
@@ -64,7 +67,7 @@ export function HomePage() {
                         <Link
                             key={post.id}
                             to={`/posts/${post.id}`}
-                            className="block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                            className="block rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                         >
                             <div className="mb-3">
                                 <h2 className="text-lg font-semibold text-slate-900">{post.title}</h2>
@@ -80,12 +83,12 @@ export function HomePage() {
                                 <img
                                     src={post.image_url}
                                     alt="Post preview"
-                                    className="mt-4 h-56 w-full rounded-xl object-cover"
+                                    className="mt-4 h-48 w-full rounded-2xl object-cover sm:h-56"
                                 />
                             ) : null}
 
                             {!post.image_url && embedVideoUrl ? (
-                                <div className="relative mt-4 w-full overflow-hidden rounded-xl bg-slate-100 pt-[56.25%]">
+                                <div className="relative mt-4 w-full overflow-hidden rounded-2xl bg-slate-100 pt-[56.25%]">
                                     <iframe
                                         src={embedVideoUrl}
                                         className="absolute left-0 top-0 h-full w-full"
@@ -96,15 +99,18 @@ export function HomePage() {
                                 </div>
                             ) : null}
 
-                            <div className="mt-4 text-sm font-medium text-slate-600">
-                                {post.comments?.length ?? 0} comments
+                            <div className="mt-4 flex items-center justify-between text-sm">
+                                <span className="font-medium text-slate-600">
+                                    {post.comments?.length ?? 0} comments
+                                </span>
+                                <span className="text-slate-400">Open post →</span>
                             </div>
                         </Link>
                     )
                 })}
 
                 {posts.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500">
+                    <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">
                         No posts yet. Be the first to create one.
                     </div>
                 ) : null}
