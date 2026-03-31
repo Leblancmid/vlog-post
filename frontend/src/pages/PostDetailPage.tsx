@@ -206,7 +206,7 @@ export function PostDetailPage() {
                                 </div>
                             )}
 
-                            <div className="mt-4 space-y-3 border-l-2 border-slate-200 pl-4">
+                            <div className="mt-4 space-y-3 border-l-2 border-slate-200 pl-3 sm:pl-4">
                                 {item.replies?.map((reply) => (
                                     <div key={reply.id} className="rounded-lg bg-slate-50 p-3">
                                         <div className="flex flex-wrap items-center gap-2">
