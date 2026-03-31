@@ -1,135 +1,135 @@
 import { useState } from 'react'
-import { updateUser } from '../api/user'
+import { Dialog } from '@headlessui/react'
 import { useAuthStore } from '../store/authStore'
+import { updateUser } from '../api/user'
 
 export function ProfilePage() {
     const user = useAuthStore((state) => state.user)
     const setUser = useAuthStore((state) => state.setUser)
 
+    const [isOpen, setIsOpen] = useState(false)
+
     const [name, setName] = useState(user?.name ?? '')
     const [bio, setBio] = useState(user?.bio ?? '')
     const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url ?? '')
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [successMessage, setSuccessMessage] = useState('')
-    const [errorMessage, setErrorMessage] = useState('')
+    const [loading, setLoading] = useState(false)
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        setIsSubmitting(true)
-        setSuccessMessage('')
-        setErrorMessage('')
+    const openModal = () => {
+        setName(user?.name ?? '')
+        setBio(user?.bio ?? '')
+        setAvatarUrl(user?.avatar_url ?? '')
+        setIsOpen(true)
+    }
+
+    const closeModal = () => setIsOpen(false)
+
+    const handleSubmit = async () => {
+        setLoading(true)
 
         try {
-            const updatedUser = await updateUser({
-                name: name.trim(),
-                bio: bio.trim() || '',
-                avatar_url: avatarUrl.trim() || '',
+            const updated = await updateUser({
+                name,
+                bio,
+                avatar_url: avatarUrl,
             })
 
-            setUser(updatedUser)
-            setSuccessMessage('Profile updated successfully.')
-        } catch (error: any) {
-            setErrorMessage(error?.response?.data?.message || 'Failed to update profile.')
+            setUser(updated)
+            closeModal()
         } finally {
-            setIsSubmitting(false)
+            setLoading(false)
         }
     }
 
     return (
         <div className="mx-auto max-w-4xl">
-            <div className="mb-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h1 className="text-2xl font-bold text-slate-900">Edit Profile</h1>
-                <p className="mt-2 text-sm leading-6 text-slate-500">
-                    Update your basic profile information.
-                </p>
-            </div>
+            {/* Profile Card */}
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-2xl font-bold text-slate-900">Profile</h1>
 
-            <form
-                onSubmit={handleSubmit}
-                className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
-            >
-                <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                    <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-slate-900 text-2xl font-bold text-white">
-                        {avatarUrl ? (
+                    <button
+                        onClick={openModal}
+                        className="rounded-xl bg-slate-900 px-4 py-2 text-sm text-white"
+                    >
+                        Edit Profile
+                    </button>
+                </div>
+
+                <div className="mt-6 flex items-center gap-4">
+                    <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-slate-900 text-white">
+                        {user?.avatar_url ? (
                             <img
-                                src={avatarUrl}
-                                alt="Avatar preview"
+                                src={user.avatar_url}
                                 className="h-full w-full object-cover"
                             />
                         ) : (
-                            user?.name?.charAt(0).toUpperCase() ?? 'U'
+                            user?.name?.charAt(0).toUpperCase()
                         )}
                     </div>
 
                     <div>
-                        <h2 className="text-2xl font-semibold text-slate-900">
-                            {name || 'Unknown User'}
-                        </h2>
-                        <p className="mt-1 text-sm text-slate-500">
-                            {user?.email ?? 'No email available'}
-                        </p>
+                        <h2 className="text-xl font-semibold">{user?.name}</h2>
+                        <p className="text-sm text-slate-500">{user?.email}</p>
                     </div>
                 </div>
 
-                <div className="mt-8 grid gap-5">
-                    <div>
-                        <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                            Full Name
-                        </label>
-                        <input
-                            className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="Enter your name"
-                        />
-                    </div>
+                {user?.bio && (
+                    <p className="mt-4 text-slate-600">{user.bio}</p>
+                )}
+            </div>
 
-                    <div>
-                        <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                            Avatar URL
-                        </label>
-                        <input
-                            className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500"
-                            value={avatarUrl}
-                            onChange={(e) => setAvatarUrl(e.target.value)}
-                            placeholder="https://example.com/avatar.jpg"
-                        />
-                    </div>
+            {/* Modal */}
+            <Dialog open={isOpen} onClose={closeModal} className="relative z-50">
+                <div className="fixed inset-0 bg-black/30" />
 
-                    <div>
-                        <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                            Bio
-                        </label>
-                        <textarea
-                            className="min-h-32 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500"
-                            value={bio}
-                            onChange={(e) => setBio(e.target.value)}
-                            placeholder="Write a short bio..."
-                        />
-                    </div>
+                <div className="fixed inset-0 flex items-center justify-center p-4">
+                    <Dialog.Panel className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg">
+                        <Dialog.Title className="text-lg font-semibold">
+                            Edit Profile
+                        </Dialog.Title>
+
+                        <div className="mt-4 space-y-4">
+                            <input
+                                className="w-full rounded-lg border px-3 py-2"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="Name"
+                            />
+
+                            <input
+                                className="w-full rounded-lg border px-3 py-2"
+                                value={avatarUrl}
+                                onChange={(e) => setAvatarUrl(e.target.value)}
+                                placeholder="Avatar URL"
+                            />
+
+                            <textarea
+                                className="w-full rounded-lg border px-3 py-2"
+                                value={bio}
+                                onChange={(e) => setBio(e.target.value)}
+                                placeholder="Bio"
+                            />
+                        </div>
+
+                        <div className="mt-6 flex justify-end gap-2">
+                            <button
+                                onClick={closeModal}
+                                className="rounded-lg border px-4 py-2"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                onClick={handleSubmit}
+                                disabled={loading}
+                                className="rounded-lg bg-slate-900 px-4 py-2 text-white"
+                            >
+                                {loading ? 'Saving...' : 'Save'}
+                            </button>
+                        </div>
+                    </Dialog.Panel>
                 </div>
-
-                {successMessage ? (
-                    <div className="mt-5 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                        {successMessage}
-                    </div>
-                ) : null}
-
-                {errorMessage ? (
-                    <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                        {errorMessage}
-                    </div>
-                ) : null}
-
-                <div className="mt-6 flex justify-end">
-                    <button
-                        disabled={isSubmitting}
-                        className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50"
-                    >
-                        {isSubmitting ? 'Saving...' : 'Save Changes'}
-                    </button>
-                </div>
-            </form>
+            </Dialog>
         </div>
     )
 }
