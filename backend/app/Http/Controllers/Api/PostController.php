@@ -19,6 +19,16 @@ class PostController extends Controller
 
     public function store(StorePostRequest $request)
     {
+        if (
+            str_contains((string) $request->header('content-type'), 'multipart/form-data') &&
+            empty($request->all()) &&
+            !empty($_FILES)
+        ) {
+            return response()->json([
+                'message' => 'Uploaded file is too large for the server configuration.',
+            ], 422);
+        }
+
         $data = $request->validated();
 
         $imageUrl = null;

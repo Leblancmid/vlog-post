@@ -123,9 +123,18 @@ export function CreatePostPage() {
             const post = await createPost(formData)
             navigate(`/posts/${post.id}`)
         } catch (error: any) {
-            console.error(error)
-            console.error(error?.response?.data)
-            setError(error?.response?.data?.message || 'Unable to create post.')
+            console.error('status:', error?.response?.status)
+            console.error('data:', error?.response?.data)
+            console.error('errors:', error?.response?.data?.errors)
+
+            const firstError =
+                error?.response?.data?.errors?.title?.[0] ||
+                error?.response?.data?.errors?.content?.[0] ||
+                error?.response?.data?.errors?.image?.[0] ||
+                error?.response?.data?.errors?.video_url?.[0] ||
+                error?.response?.data?.message
+
+            setError(firstError || 'Unable to create post.')
         } finally {
             setIsSubmitting(false)
         }
@@ -242,6 +251,7 @@ export function CreatePostPage() {
                                 </button>
 
                                 <button
+                                    type="submit"
                                     disabled={isSubmitting}
                                     className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50"
                                 >

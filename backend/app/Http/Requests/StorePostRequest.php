@@ -13,11 +13,15 @@ class StorePostRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $title = $this->input('title');
+        $content = $this->input('content');
+        $videoUrl = $this->input('video_url');
+
         $this->merge([
-            'title' => is_string($this->title) ? trim($this->title) : $this->title,
-            'content' => is_string($this->content) ? trim($this->content) : $this->content,
-            'video_url' => is_string($this->video_url) && $this->video_url !== ''
-                ? trim($this->video_url)
+            'title' => is_string($title) ? trim($title) : $title,
+            'content' => is_string($content) ? trim($content) : $content,
+            'video_url' => is_string($videoUrl) && trim($videoUrl) !== ''
+                ? trim($videoUrl)
                 : null,
         ]);
     }
@@ -37,13 +41,10 @@ class StorePostRequest extends FormRequest
         return [
             'title.required' => 'The title field is required.',
             'title.max' => 'The title must not exceed 255 characters.',
-
             'content.required' => 'The content field is required.',
-
             'image.image' => 'The uploaded file must be an image.',
             'image.mimes' => 'The image must be a file of type: jpg, jpeg, png, webp.',
             'image.max' => 'The image must not be greater than 5MB.',
-
             'video_url.url' => 'The video URL must be a valid URL.',
             'video_url.max' => 'The video URL must not exceed 2048 characters.',
         ];

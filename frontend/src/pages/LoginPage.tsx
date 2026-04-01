@@ -6,7 +6,7 @@ export function LoginPage() {
 
     const [isSubmitting, setIsSubmitting] = useState(false)
 
-    const [email, setEmail] = useState('demo@vlogapp.com')
+    const [email, setEmail] = useState('mark@example.com')
     const [password, setPassword] = useState('password')
     const [error, setError] = useState('')
     const [fieldErrors, setFieldErrors] = useState({
