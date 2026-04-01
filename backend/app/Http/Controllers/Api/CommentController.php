@@ -20,10 +20,10 @@ class CommentController extends Controller
             'content' => $data['content'],
         ]);
 
-        return response()->json(
-            $comment->load('user'),
-            201
-        );
+        return response()->json([
+            'message' => 'Comment added successfully.',
+            'data' => $comment->load('user'),
+        ], 201);
     }
 
     public function reply(StoreCommentRequest $request, Comment $comment): JsonResponse
@@ -37,9 +37,9 @@ class CommentController extends Controller
             'content' => $data['content'],
         ]);
 
-        return response()->json(
-            $reply->load('user'),
-            201
-        );
+        return response()->json([
+            'message' => 'Reply added successfully.',
+            'data' => $reply->load('user'),
+        ], 201);
     }
 }

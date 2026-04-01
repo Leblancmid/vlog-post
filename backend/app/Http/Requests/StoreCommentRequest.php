@@ -13,8 +13,10 @@ class StoreCommentRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $content = $this->input('content');
+
         $this->merge([
-            'content' => is_string($this->content) ? trim($this->content) : $this->content,
+            'content' => is_string($content) ? trim($content) : $content,
         ]);
     }
 
