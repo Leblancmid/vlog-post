@@ -29,6 +29,13 @@ A full-stack vlog platform where users can share posts with images and videos, i
 - MySQL
 - Laravel Sanctum
 
+## 📦 Prerequisites
+
+- PHP >= 8.4
+- Composer
+- Node.js >= 18
+- MySQL
+
 ---
 
 ## 🔐 Laravel Sanctum Setup
@@ -57,6 +64,7 @@ php artisan key:generate
 
 ### 3. Configure database in .env
 
+DB_CONNECTION=mysql
 DB_DATABASE=vlog_post_db
 DB_USERNAME=root
 DB_PASSWORD=password
